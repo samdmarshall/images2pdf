@@ -9,7 +9,9 @@ int main (int argc, const char * argv[]) {
 		if ([[NSFileManager defaultManager] fileExistsAtPath:folderPath isDirectory:&isFolder]) {
 			if (isFolder) {
 				NSArray *contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:folderPath error:nil];
-				
+				contents = [contents sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+					return [obj1 compare:obj2 options:NSNumericSearch];
+				}];
 				NSMutableData* outputData = [[NSMutableData alloc] init];
 				CGDataConsumerRef dataConsumer = CGDataConsumerCreateWithCFData((CFMutableDataRef)outputData);
 				CGContextRef pdfContext = CGPDFContextCreate(dataConsumer, NULL, NULL); 
@@ -22,13 +24,15 @@ int main (int argc, const char * argv[]) {
 						if (!isFile) {
 							if (UTTypeConformsTo((CFStringRef)[[NSWorkspace sharedWorkspace] typeOfFile:itemPath error:nil],kUTTypeImage)) {
 								CGImageSourceRef pageSource = CGImageSourceCreateWithURL((CFURLRef)[NSURL fileURLWithPath:itemPath], NULL);
-								CGImageRef pageImage = CGImageSourceCreateImageAtIndex(pageSource, 0, NULL);
-								CGRect pageSize = CGRectMake(0, 0, CGImageGetWidth(pageImage), CGImageGetHeight(pageImage));
-								CGContextBeginPage(pdfContext, &pageSize);
-								CGContextDrawImage(pdfContext, pageSize, pageImage);
-								CGImageRelease(pageImage);
-								CFRelease(pageSource);
-								CGContextEndPage(pdfContext);
+								if (pageSource != NULL) {
+									CGImageRef pageImage = CGImageSourceCreateImageAtIndex(pageSource, 0, NULL);
+									CGRect pageSize = CGRectMake(0, 0, CGImageGetWidth(pageImage), CGImageGetHeight(pageImage));
+									CGContextBeginPage(pdfContext, &pageSize);
+									CGContextDrawImage(pdfContext, pageSize, pageImage);
+									CGImageRelease(pageImage);
+									CFRelease(pageSource);
+									CGContextEndPage(pdfContext);
+								}
 							}
 						}
 					}
