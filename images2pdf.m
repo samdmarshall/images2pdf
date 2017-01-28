@@ -47,8 +47,8 @@ int main (int argc, const char * argv[]) {
 			}
 		}
 	} else {
-		NSLog(@"Please supply only the path to the folder:");
-		NSLog(@"./images2pdf /path/to/folder/of/images/");
+		printf("Please supply only the path to the folder:\n");
+		printf("images2pdf /path/to/folder/of/images/\n");
 	}
     [pool drain];
     return 0;
